@@ -5,6 +5,7 @@ import 'package:near_radio/core/models/radio_station.dart';
 import 'package:near_radio/core/services/radio_api_service.dart';
 import 'package:near_radio/core/services/storage_service.dart';
 import 'package:near_radio/core/services/audio_service.dart';
+import 'package:near_radio/core/services/connectivity_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/controllers/player_controller.dart';
 import 'package:near_radio/controllers/favourites_controller.dart';
@@ -34,10 +35,16 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    Get.find<ConnectivityService>().onReconnected(loadData);
     loadData();
   }
 
   Future<void> loadData() async {
+    if (!Get.find<ConnectivityService>().isOnline) {
+      errorMessage.value = AppStrings.noInternet;
+      isLoading.value = false;
+      return;
+    }
     isLoading.value = true;
     errorMessage.value = '';
     _currentPage = 1;

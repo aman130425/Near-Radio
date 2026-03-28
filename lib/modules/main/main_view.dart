@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:upgrader/upgrader.dart';
+import '../../app/widgets/connectivity_wrapper.dart';
 import '../../app/widgets/glass_bottom_nav_bar.dart';
 import '../../app/widgets/mini_player.dart';
 import '../../core/constants/api_constants.dart';
@@ -27,10 +29,11 @@ class MainView extends GetView<MainController> {
         ? Colors.black.withOpacity(0.92)
         : Colors.white.withOpacity(0.92);
 
-    return Obx(() => Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: AppBar(
+    return UpgradeAlert(
+      child: Obx(() => Scaffold(
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+        appBar: AppBar(
         leading: Builder(
           builder: (ctx) => IconButton(
             icon: const Icon(Icons.menu_rounded),
@@ -72,53 +75,56 @@ class MainView extends GetView<MainController> {
           ),
         ),
       ),
-      drawer: _buildDrawer(context),
-      body: IndexedStack(
-        index: controller.currentIndex.value,
-        children: const [
-          HomeView(),
-          StationListView(),
-          PodcastComingSoonView(),
-          LocalMusicView(),
-          FavouritesView(),
-        ],
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const MiniPlayer(),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                top: -60,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          (isDark ? Colors.black : Colors.white).withOpacity(0.92),
-                        ],
+        drawer: _buildDrawer(context),
+        body: ConnectivityWrapper(
+          child: IndexedStack(
+            index: controller.currentIndex.value,
+            children: const [
+              HomeView(),
+              StationListView(),
+              PodcastComingSoonView(),
+              LocalMusicView(),
+              FavouritesView(),
+            ],
+          ),
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MiniPlayer(),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  top: -60,
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            (isDark ? Colors.black : Colors.white).withOpacity(0.92),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              GlassBottomNavBar(
-                currentIndex: controller.currentIndex.value,
-                onTap: controller.changePage,
-              ),
-            ],
-          ),
-        ],
-      ),
-    ));
+                GlassBottomNavBar(
+                  currentIndex: controller.currentIndex.value,
+                  onTap: controller.changePage,
+                ),
+              ],
+            ),
+          ],
+        ),
+      )),
+    );
   }
 
   String _appBarTitle(int tabIndex) {

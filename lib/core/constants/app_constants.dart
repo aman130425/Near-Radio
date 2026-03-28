@@ -20,6 +20,12 @@ class AppConstants {
   // Onboarding (first-time only)
   static const String keyOnboardingCompleted = 'onboarding_completed';
   static const String appVersion = '1.0.0';
+
+  // Store IDs for app update check (Upgrader)
+  /// Android: Package name from android/app/build.gradle (applicationId)
+  static const String androidPackageName = 'com.near_radio';
+  /// iOS: Your App Store app ID - update when you publish to App Store
+  static const String iosAppId = 'YOUR_IOS_APP_ID';
   
   // Categories
   static const List<String> categories = [

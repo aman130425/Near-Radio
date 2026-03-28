@@ -4,6 +4,7 @@ import 'package:near_radio/core/models/filter_api_models.dart';
 import 'package:near_radio/core/services/radio_api_service.dart';
 import 'package:near_radio/core/services/storage_service.dart';
 import 'package:near_radio/core/services/audio_service.dart';
+import 'package:near_radio/core/services/connectivity_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/app/routes/app_pages.dart';
 import 'package:near_radio/controllers/player_controller.dart';
@@ -54,11 +55,17 @@ class StationListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    Get.find<ConnectivityService>().onReconnected(loadFilterData);
     loadFilterData();
   }
 
   /// Load countries, categories, languages from API; build name + station count
   Future<void> loadFilterData() async {
+    if (!Get.find<ConnectivityService>().isOnline) {
+      errorMessage.value = 'No internet';
+      isLoading.value = false;
+      return;
+    }
     isLoading.value = true;
     errorMessage.value = '';
     try {
@@ -179,6 +186,10 @@ class StationListController extends GetxController {
   /// Load stations for selected country/category/language from API
   Future<void> loadStationsForFilter() async {
     if (selectedItemId.value <= 0) return;
+    if (!Get.find<ConnectivityService>().isOnline) {
+      errorMessage.value = 'No internet';
+      return;
+    }
     isLoadingFilteredStations.value = true;
     _filteredStationsPage = 1;
     try {
@@ -204,6 +215,7 @@ class StationListController extends GetxController {
   /// Load more stations (pagination)
   Future<void> loadMoreFilteredStations() async {
     if (!hasMoreFilteredStations.value || isLoadingMoreFiltered.value) return;
+    if (!Get.find<ConnectivityService>().isOnline) return;
     isLoadingMoreFiltered.value = true;
     _filteredStationsPage += 1;
     try {
