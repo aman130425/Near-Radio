@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,25 +10,39 @@ import 'app/bindings/initial_binding.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/push_notification_service.dart';
+import 'core/services/analytics_service.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 /// Main entry point of the application
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
+void main() {
   runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
     // Initialize Firebase only if not already done
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     }
 
-    // Pass all Flutter framework errors to Crashlytics (includes UI overflow/overlapping)
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+    await AnalyticsService.init();
+
+    // Flutter framework errors (layout, etc.)
     FlutterError.onError = (errorDetails) {
-      if (kDebugMode) FlutterError.presentError(errorDetails); // Show red screen in debug
+      if (kDebugMode) FlutterError.presentError(errorDetails);
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+
+    // Async errors outside zones (e.g. some platform callbacks)
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
+    PushNotificationService.instance.onNotificationTap = (data) {
+      AnalyticsService.logPushNotificationOpened(data);
     };
 
     await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
@@ -74,6 +89,9 @@ class MyApp extends StatelessWidget {
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
       defaultTransition: Transition.fadeIn,
+      navigatorObservers: [
+        FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+      ],
     ));
   }
 }

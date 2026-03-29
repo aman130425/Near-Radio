@@ -6,6 +6,7 @@ import '../../core/models/radio_station.dart';
 import 'package:near_radio/controllers/favourites_controller.dart';
 import 'package:near_radio/core/constants/app_constants.dart';
 import 'package:near_radio/core/utils/loader_widgets.dart';
+import 'package:near_radio/app/widgets/station_logo_image.dart';
 
 /// Favourites screen view
 class FavouritesView extends GetView<FavouritesController> {
@@ -116,15 +117,13 @@ class FavouritesView extends GetView<FavouritesController> {
             child: station.logo != null && station.logo!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      station.logo!,
+                    child: StationLogoImage(
+                      url: station.logo!,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.radio_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        );
-                      },
+                      errorWidget: Icon(
+                        Icons.radio_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   )
                 : Icon(

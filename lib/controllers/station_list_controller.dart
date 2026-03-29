@@ -9,6 +9,8 @@ import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/app/routes/app_pages.dart';
 import 'package:near_radio/controllers/player_controller.dart';
 import 'package:near_radio/controllers/favourites_controller.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Filter type enum
 enum FilterType { default_, aToZ, zToA, number }
@@ -93,6 +95,7 @@ class StationListController extends GetxController {
       countriesWithCount.value = [];
       genresWithCount.value = [];
       languagesWithCount.value = [];
+      AnalyticsService.logStationListFiltersLoadFailed();
     }
     isLoading.value = false;
   }
@@ -154,6 +157,7 @@ class StationListController extends GetxController {
     selectedTab.value = tab;
     selectedItem.value = '';
     selectedItemId.value = 0;
+    AnalyticsService.logFilterTabChanged(tab.name, screenName: AnalyticsScreens.stationList);
     _updateDisplayList();
   }
 
@@ -162,6 +166,18 @@ class StationListController extends GetxController {
     selectedItem.value = item.name;
     selectedItemId.value = item.id;
     await loadStationsForFilter();
+    _logFilterNameSelected(item);
+  }
+
+  void _logFilterNameSelected(ItemWithCount item) {
+    switch (selectedTab.value) {
+      case TabType.country:
+        AnalyticsService.logCountryNameSelected(item.name, screenName: AnalyticsScreens.stationList);
+      case TabType.genre:
+        AnalyticsService.logGenreNameSelected(item.name, screenName: AnalyticsScreens.stationList);
+      case TabType.language:
+        AnalyticsService.logLanguageNameSelected(item.name, screenName: AnalyticsScreens.stationList);
+    }
   }
 
   void goBack() {
@@ -208,6 +224,7 @@ class StationListController extends GetxController {
       displayList.value = [];
       hasMoreFilteredStations.value = false;
       errorMessage.value = 'Failed to load stations: ${e.toString()}';
+      AnalyticsService.logStationListLoadFailed();
     }
     isLoadingFilteredStations.value = false;
   }
@@ -229,6 +246,7 @@ class StationListController extends GetxController {
       filteredStations.addAll(result.stations);
       hasMoreFilteredStations.value = result.hasMore;
       displayList.value = List<RadioStation>.from(filteredStations);
+      AnalyticsService.logLoadMoreStations();
     } catch (_) {
       hasMoreFilteredStations.value = false;
     }
@@ -242,6 +260,7 @@ class StationListController extends GetxController {
 
   void searchStations(String query) {
     searchQuery.value = query;
+    AnalyticsService.logSearchStations(query, screenName: AnalyticsScreens.stationList);
     _updateDisplayList();
   }
 
@@ -317,7 +336,7 @@ class StationListController extends GetxController {
       playerController.setStationList(filteredStations, station);
       playerController.currentStation.value = station;
       Get.toNamed(Routes.player);
-      await playerController.playStation(station);
+      await playerController.playStation(station, screenName: AnalyticsScreens.stationList);
     } catch (e) {
       Get.snackbar(AppStrings.error, 'Failed to play station: ${e.toString()}', snackPosition: SnackPosition.TOP);
     }
@@ -330,9 +349,11 @@ class StationListController extends GetxController {
   Future<void> toggleFavourite(RadioStation station) async {
     if (StorageService.isFavourite(station.id)) {
       await StorageService.removeFavourite(station.id);
+      AnalyticsService.logFavouriteRemoved(station, screenName: AnalyticsScreens.stationList);
       Get.snackbar(AppStrings.removeFromFavourites, 'Removed from favourites', snackPosition: SnackPosition.TOP);
     } else {
       await StorageService.saveFavourite(station);
+      AnalyticsService.logFavouriteAdded(station, screenName: AnalyticsScreens.stationList);
       Get.snackbar(AppStrings.addToFavourites, 'Added to favourites', snackPosition: SnackPosition.TOP);
     }
     try {

@@ -8,6 +8,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/models/radio_station.dart';
 import '../../core/services/audio_service.dart';
 import 'package:near_radio/controllers/player_controller.dart';
+import 'package:near_radio/app/widgets/station_logo_image.dart';
 
 /// Player screen view – layout like reference: artwork, dots, control row, utility row, sections below.
 class PlayerView extends GetView<PlayerController> {
@@ -126,10 +127,10 @@ class PlayerView extends GetView<PlayerController> {
             child: station.logo != null && station.logo!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      station.logo!,
+                    child: StationLogoImage(
+                      url: station.logo!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildDefaultArtwork(context),
+                      errorWidget: _buildDefaultArtwork(context),
                     ),
                   )
                 : _buildDefaultArtwork(context),
@@ -424,10 +425,10 @@ class PlayerView extends GetView<PlayerController> {
               child: s.logo != null && s.logo!.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        s.logo!,
+                      child: StationLogoImage(
+                        url: s.logo!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
+                        errorWidget: Icon(
                           Icons.radio_rounded,
                           color: Theme.of(context).colorScheme.primary,
                         ),

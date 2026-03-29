@@ -11,6 +11,7 @@ import 'package:near_radio/controllers/favourites_controller.dart';
 import 'package:near_radio/core/utils/country_utils.dart';
 import 'package:near_radio/core/utils/loader_widgets.dart';
 import 'package:near_radio/core/constants/app_constants.dart';
+import 'package:near_radio/app/widgets/station_logo_image.dart';
 
 /// Station list screen view
 class StationListView extends GetView<StationListController> {
@@ -615,15 +616,13 @@ class StationListView extends GetView<StationListController> {
               child: station.logo != null && station.logo!.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        station.logo!,
+                      child: StationLogoImage(
+                        url: station.logo!,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.radio_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                          );
-                        },
+                        errorWidget: Icon(
+                          Icons.radio_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     )
                   : Icon(

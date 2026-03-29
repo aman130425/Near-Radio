@@ -6,6 +6,7 @@ import '../../core/constants/app_strings.dart';
 import '../../app/routes/app_pages.dart';
 import 'package:near_radio/controllers/player_controller.dart';
 import 'glass_container.dart';
+import 'station_logo_image.dart';
 
 /// Mini player widget that shows at the bottom when a station is playing
 class MiniPlayer extends StatelessWidget {
@@ -81,10 +82,10 @@ class MiniPlayer extends StatelessWidget {
                   child: currentStation.logo != null && currentStation.logo!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            currentStation.logo!,
+                          child: StationLogoImage(
+                            url: currentStation.logo!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(
+                            errorWidget: Icon(
                               Icons.radio_rounded,
                               color: Theme.of(context).colorScheme.primary,
                             ),

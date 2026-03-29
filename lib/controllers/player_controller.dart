@@ -4,6 +4,8 @@ import 'package:near_radio/core/services/audio_service.dart';
 import 'package:near_radio/core/services/storage_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/controllers/favourites_controller.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Player screen controller
 class PlayerController extends GetxController {
@@ -99,7 +101,11 @@ class PlayerController extends GetxController {
     final previousIndex = currentIndex.value - 1;
     if (previousIndex >= 0 && previousIndex < stationList.length) {
       currentIndex.value = previousIndex;
-      await playStation(stationList[previousIndex]);
+      await playStation(
+        stationList[previousIndex],
+        screenName: AnalyticsScreens.player,
+        action: PlayAnalyticsAction.previous,
+      );
     }
   }
 
@@ -108,17 +114,25 @@ class PlayerController extends GetxController {
     final nextIndex = currentIndex.value + 1;
     if (nextIndex < stationList.length) {
       currentIndex.value = nextIndex;
-      await playStation(stationList[nextIndex]);
+      await playStation(
+        stationList[nextIndex],
+        screenName: AnalyticsScreens.player,
+        action: PlayAnalyticsAction.next,
+      );
     }
   }
 
-  Future<void> playStation(RadioStation station) async {
+  Future<void> playStation(
+    RadioStation station, {
+    String screenName = AnalyticsScreens.player,
+    PlayAnalyticsAction action = PlayAnalyticsAction.play,
+  }) async {
     try {
       isLoading.value = true;
       currentStation.value = station;
       _updateCurrentIndex();
       _updateFavouriteState();
-      await _audioService.playStation(station);
+      await _audioService.playStation(station, screenName: screenName, action: action);
       await Future.delayed(const Duration(milliseconds: 100));
       await StorageService.saveRecentStation(station);
       _loadRecentStations();
@@ -135,8 +149,10 @@ class PlayerController extends GetxController {
   Future<void> togglePlayPause() async {
     if (currentStation.value == null) return;
     if (isPlaying.value) {
+      AnalyticsService.logPausePlayback(screenName: AnalyticsScreens.player);
       await _audioService.pause();
     } else {
+      AnalyticsService.logResumePlayback(screenName: AnalyticsScreens.player);
       await _audioService.resume();
     }
   }
@@ -145,10 +161,12 @@ class PlayerController extends GetxController {
     if (StorageService.isFavourite(station.id)) {
       await StorageService.removeFavourite(station.id);
       isCurrentStationFavourite.value = false;
+      AnalyticsService.logFavouriteRemoved(station, screenName: AnalyticsScreens.player);
       Get.snackbar(AppStrings.removeFromFavourites, 'Removed from favourites', snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 1));
     } else {
       await StorageService.saveFavourite(station);
       isCurrentStationFavourite.value = true;
+      AnalyticsService.logFavouriteAdded(station, screenName: AnalyticsScreens.player);
       Get.snackbar(AppStrings.addToFavourites, 'Added to favourites', snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 1));
     }
     _refreshFavouritesController();
@@ -166,5 +184,11 @@ class PlayerController extends GetxController {
 
   bool get isMuted => _audioService.isMuted.value;
 
-  Future<void> toggleMute() => _audioService.toggleMute();
+  Future<void> toggleMute() async {
+    await _audioService.toggleMute();
+    AnalyticsService.logMuteToggle(
+      isMuted: _audioService.isMuted.value,
+      screenName: AnalyticsScreens.player,
+    );
+  }
 }

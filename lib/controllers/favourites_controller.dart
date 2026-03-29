@@ -5,6 +5,8 @@ import 'package:near_radio/core/services/storage_service.dart';
 import 'package:near_radio/core/services/audio_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/controllers/player_controller.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Favourites controller
 class FavouritesController extends GetxController {
@@ -28,6 +30,7 @@ class FavouritesController extends GetxController {
 
   Future<void> removeFavourite(RadioStation station) async {
     await StorageService.removeFavourite(station.id);
+    AnalyticsService.logFavouriteRemoved(station, screenName: AnalyticsScreens.favourites);
     loadFavourites();
     Get.snackbar(AppStrings.removeFromFavourites, 'Removed from favourites', snackPosition: SnackPosition.TOP);
   }
@@ -44,7 +47,7 @@ class FavouritesController extends GetxController {
       playerController.setStationList(favouriteStations, station);
       playerController.currentStation.value = station;
       Get.toNamed(Routes.player);
-      await playerController.playStation(station);
+      await playerController.playStation(station, screenName: AnalyticsScreens.favourites);
     } catch (e) {
       Get.snackbar(AppStrings.error, 'Failed to play station: ${e.toString()}', snackPosition: SnackPosition.TOP);
     }

@@ -2,7 +2,7 @@ name: near_radio
 description: "Near Radio - A production-ready Flutter FM Radio Streaming app with clean architecture."
 publish_to: 'none'
 
-version: 1.1.0+4
+version: 1.2.0+5
 
 environment:
   sdk: ^3.10.4
@@ -40,6 +40,7 @@ dependencies:
 
   # Firebase
   firebase_core: ^3.8.1
+  firebase_analytics: ^11.6.0
   firebase_messaging: ^15.1.5
   firebase_crashlytics: ^4.1.3
 

@@ -9,6 +9,9 @@ import '../constants/app_constants.dart';
 import '../utils/logger.dart';
 import 'background_audio_handler.dart';
 import 'package:near_radio/controllers/player_controller.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
+import 'package:near_radio/core/services/crashlytics_service.dart';
 
 /// Service for handling audio playback
 class AudioService extends GetxController {
@@ -127,8 +130,12 @@ class AudioService extends GetxController {
     });
   }
 
-  /// Play a radio station
-  Future<void> playStation(RadioStation station) async {
+  /// Play a radio station. [screenName] / [action] drive Firebase custom events.
+  Future<void> playStation(
+    RadioStation station, {
+    required String screenName,
+    PlayAnalyticsAction action = PlayAnalyticsAction.play,
+  }) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
@@ -147,6 +154,7 @@ class AudioService extends GetxController {
         }
         isLoading.value = false;
         Logger.info('Resuming station: ${station.name}');
+        AnalyticsService.logResumePlayback(screenName: screenName);
         return;
       }
       
@@ -232,6 +240,19 @@ class AudioService extends GetxController {
       }
 
       Logger.info('Playing station: ${station.name}');
+      switch (action) {
+        case PlayAnalyticsAction.play:
+          AnalyticsService.logPlayStation(station, screenName: screenName);
+        case PlayAnalyticsAction.next:
+          AnalyticsService.logPlayerNext(station, screenName: screenName);
+        case PlayAnalyticsAction.previous:
+          AnalyticsService.logPlayerPrevious(station, screenName: screenName);
+        case PlayAnalyticsAction.localMusic:
+          AnalyticsService.logLocalMusicPlay(
+            musicName: station.name,
+            screenName: screenName,
+          );
+      }
     } catch (e) {
       // Provide user-friendly error messages
       String errorMsg = 'Failed to play station';
@@ -260,6 +281,13 @@ class AudioService extends GetxController {
       
       errorMessage.value = errorMsg;
       Logger.error('Failed to play station', 'AudioService', e);
+      AnalyticsService.logPlaybackFailed(errorMsg);
+      await CrashlyticsService.recordError(
+        e,
+        StackTrace.current,
+        reason: 'play_station failed: $screenName',
+        fatal: false,
+      );
       isLoading.value = false;
       currentStation.value = null;
     }
@@ -302,11 +330,13 @@ class AudioService extends GetxController {
     }
   }
 
-  /// Toggle play/pause
+  /// Toggle play/pause (e.g. mini player).
   Future<void> togglePlayPause() async {
     if (playerState.playing) {
+      AnalyticsService.logPausePlayback(screenName: AnalyticsScreens.miniPlayer);
       await pause();
     } else {
+      AnalyticsService.logResumePlayback(screenName: AnalyticsScreens.miniPlayer);
       await resume();
     }
   }

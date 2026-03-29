@@ -9,6 +9,8 @@ import 'package:near_radio/core/services/connectivity_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
 import 'package:near_radio/controllers/player_controller.dart';
 import 'package:near_radio/controllers/favourites_controller.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Home screen controller – All channels from API with pagination
 class HomeController extends GetxController {
@@ -75,6 +77,7 @@ class HomeController extends GetxController {
       topLocalStations.value = [];
       allChannels.value = [];
       hasMoreChannels.value = false;
+      AnalyticsService.logHomeChannelsLoadFailed();
     }
     isLoading.value = false;
   }
@@ -90,6 +93,7 @@ class HomeController extends GetxController {
       );
       allChannels.addAll(result.stations);
       hasMoreChannels.value = result.hasMore;
+      AnalyticsService.logLoadMoreChannels();
     } catch (_) {
       hasMoreChannels.value = false;
     }
@@ -109,7 +113,7 @@ class HomeController extends GetxController {
       playerController.setStationList(combined, station);
       playerController.currentStation.value = station;
       Get.toNamed(Routes.player);
-      await playerController.playStation(station);
+      await playerController.playStation(station, screenName: AnalyticsScreens.home);
       recentStations.value = StorageService.getRecentStations();
     } catch (e) {
       Get.snackbar(AppStrings.error, 'Failed to play station: ${e.toString()}', snackPosition: SnackPosition.TOP);
@@ -134,9 +138,11 @@ class HomeController extends GetxController {
   Future<void> toggleFavourite(RadioStation station) async {
     if (StorageService.isFavourite(station.id)) {
       await StorageService.removeFavourite(station.id);
+      AnalyticsService.logFavouriteRemoved(station, screenName: AnalyticsScreens.home);
       Get.snackbar(AppStrings.removeFromFavourites, 'Removed from favourites', snackPosition: SnackPosition.TOP);
     } else {
       await StorageService.saveFavourite(station);
+      AnalyticsService.logFavouriteAdded(station, screenName: AnalyticsScreens.home);
       Get.snackbar(AppStrings.addToFavourites, 'Added to favourites', snackPosition: SnackPosition.TOP);
     }
     _refreshFavouritesController();

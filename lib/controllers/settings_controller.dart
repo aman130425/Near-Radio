@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:near_radio/app/theme/app_theme.dart';
 import 'package:near_radio/core/services/storage_service.dart';
 import 'package:near_radio/core/constants/app_constants.dart';
-import 'package:near_radio/core/constants/app_strings.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Settings controller
 class SettingsController extends GetxController {
@@ -26,6 +26,7 @@ class SettingsController extends GetxController {
   void toggleNotifications(bool value) {
     notificationsEnabled.value = value;
     StorageService.saveNotificationPreference(value);
+    AnalyticsService.logNotificationPreference(enabled: value);
   }
 
   /// Get app version

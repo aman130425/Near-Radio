@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/services/storage_service.dart';
+import '../../core/services/analytics_service.dart';
 
 /// App theme controller and configuration
 class AppTheme extends GetxController {
@@ -17,6 +18,7 @@ class AppTheme extends GetxController {
     isDarkMode.value = !isDarkMode.value;
     StorageService.saveThemeMode(isDarkMode.value);
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+    AnalyticsService.logThemeChanged(isDark: isDarkMode.value);
   }
 
   /// Get current theme data

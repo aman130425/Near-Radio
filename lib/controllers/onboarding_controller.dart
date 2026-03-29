@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:near_radio/app/routes/app_pages.dart';
 import 'package:near_radio/core/services/storage_service.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Onboarding flow. Completing navigates to main and saves state so it won't show again.
 class OnboardingController extends GetxController {
@@ -27,6 +28,7 @@ class OnboardingController extends GetxController {
 
   Future<void> completeOnboarding() async {
     await StorageService.setOnboardingCompleted();
+    AnalyticsService.logOnboardingComplete();
     Get.offAllNamed(Routes.main);
   }
 }

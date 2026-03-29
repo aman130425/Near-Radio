@@ -6,6 +6,7 @@ import '../../core/utils/loader_widgets.dart';
 import '../../core/models/radio_station.dart';
 import 'package:near_radio/controllers/home_controller.dart';
 import 'package:near_radio/core/constants/app_constants.dart';
+import 'package:near_radio/app/widgets/station_logo_image.dart';
 
 /// Home screen view – All channels in grid with See more
 class HomeView extends GetView<HomeController> {
@@ -249,10 +250,10 @@ class HomeView extends GetView<HomeController> {
                   height: 160 * 0.7,
                   width: double.infinity,
                   child: station.logo != null && station.logo!.isNotEmpty
-                      ? Image.network(
-                          station.logo!,
+                      ? StationLogoImage(
+                          url: station.logo!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _stationImagePlaceholder(context),
+                          errorWidget: _stationImagePlaceholder(context),
                         )
                       : _stationImagePlaceholder(context),
                 ),
@@ -317,10 +318,10 @@ class HomeView extends GetView<HomeController> {
                 Expanded(
                   flex: 7,
                   child: station.logo != null && station.logo!.isNotEmpty
-                      ? Image.network(
-                          station.logo!,
+                      ? StationLogoImage(
+                          url: station.logo!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _stationImagePlaceholder(context),
+                          errorWidget: _stationImagePlaceholder(context),
                         )
                       : _stationImagePlaceholder(context),
                 ),

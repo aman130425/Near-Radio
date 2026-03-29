@@ -9,6 +9,8 @@ import 'package:near_radio/app/routes/app_pages.dart';
 import 'package:near_radio/controllers/player_controller.dart';
 import 'package:near_radio/core/services/audio_service.dart';
 import 'package:near_radio/core/constants/app_strings.dart';
+import 'package:near_radio/core/analytics/analytics_screens.dart';
+import 'package:near_radio/core/services/analytics_service.dart';
 
 /// Local music controller – scans device storage for all audio (MP3, M4A, etc.).
 class LocalMusicController extends GetxController {
@@ -278,6 +280,7 @@ class LocalMusicController extends GetxController {
 
   void searchMusic(String query) {
     searchQuery.value = query;
+    AnalyticsService.logSearchStations(query, screenName: AnalyticsScreens.localMusic);
   }
 
   List<LocalMusicFile> get filteredMusicFiles {
@@ -313,7 +316,11 @@ class LocalMusicController extends GetxController {
 
       Get.toNamed(Routes.player);
 
-      await playerController.playStation(station);
+      await playerController.playStation(
+        station,
+        screenName: AnalyticsScreens.localMusic,
+        action: PlayAnalyticsAction.localMusic,
+      );
     } catch (e) {
       Get.snackbar(
         AppStrings.error,

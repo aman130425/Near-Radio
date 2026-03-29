@@ -1,10 +1,15 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
-/// Utility to log custom errors/keys to Firebase Crashlytics.
-/// Use for non-fatal errors or to add context before a crash.
+/// Firebase Crashlytics helpers. Global handlers are wired in `lib/main.dart`
+/// (Flutter framework errors, zone errors, and [PlatformDispatcher.instance.onError]).
+/// Use this class for non-fatal domain errors and breadcrumbs.
 class CrashlyticsService {
   CrashlyticsService._();
   static final FirebaseCrashlytics _instance = FirebaseCrashlytics.instance;
+
+  /// Disable uploads in debug builds from [main] via [FirebaseCrashlytics.setCrashlyticsCollectionEnabled].
+  static Future<void> setCollectionEnabled(bool enabled) =>
+      _instance.setCrashlyticsCollectionEnabled(enabled);
 
   /// Log a non-fatal error (e.g. API failure, parse error).
   static Future<void> logError(
