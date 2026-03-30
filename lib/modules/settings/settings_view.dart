@@ -78,11 +78,13 @@ class SettingsView extends GetView<SettingsController> {
                         children: [
                           Text(AppStrings.aboutDesc),
                           const SizedBox(height: 8),
-                          Text(
-                            '${AppStrings.appVersion}: ${controller.appVersion}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                          Obx(
+                            () => Text(
+                              '${AppStrings.appVersion}: ${controller.packageVersionLine.value.isEmpty ? '…' : controller.packageVersionLine.value}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           ),
                         ],

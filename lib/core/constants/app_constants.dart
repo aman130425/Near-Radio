@@ -19,9 +19,8 @@ class AppConstants {
 
   // Onboarding (first-time only)
   static const String keyOnboardingCompleted = 'onboarding_completed';
-  static const String appVersion = '1.0.0';
 
-  // Store IDs for app update check (Upgrader)
+  // Store IDs — iOS [Upgrade Alert] only. Android uses Play In-App Updates ([PlayStoreUpdateService]).
   /// Android: Package name from android/app/build.gradle (applicationId)
   static const String androidPackageName = 'com.near_radio';
   /// iOS: Your App Store app ID - update when you publish to App Store

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upgrader/upgrader.dart';
@@ -29,8 +30,9 @@ class MainView extends GetView<MainController> {
         ? Colors.black.withOpacity(0.92)
         : Colors.white.withOpacity(0.92);
 
-    return UpgradeAlert(
-      child: Obx(() => Scaffold(
+    // [Upgrader] uses public store metadata — useless for Android closed testing.
+    // Android updates: [PlayStoreUpdateService] + Play Core. iOS: keep UpgradeAlert.
+    final shell = Obx(() => Scaffold(
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: AppBar(
@@ -123,8 +125,12 @@ class MainView extends GetView<MainController> {
             ),
           ],
         ),
-      )),
-    );
+      ));
+
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return UpgradeAlert(child: shell);
+    }
+    return shell;
   }
 
   String _appBarTitle(int tabIndex) {
@@ -223,12 +229,14 @@ class MainView extends GetView<MainController> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               child: Column(
                 children: [
-                  Text(
-                    '${AppStrings.appVersion}: ${settingsController.appVersion}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
+                  Obx(
+                    () => Text(
+                      '${AppStrings.appVersion}: ${settingsController.packageVersionLine.value.isEmpty ? '…' : settingsController.packageVersionLine.value}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
